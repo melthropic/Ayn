@@ -63,6 +63,8 @@ follows over realtime.
 
 Step-by-step run sheet: [`DEMO.md`](DEMO.md).
 
+**Private demo.** When `AYN_DEMO_PASSWORD` is set, the first visit on each device asks for it and a signed httpOnly cookie keeps that device unlocked for 30 days. The gate also covers `/api/*`, so the assistant cannot be used without it.
+
 ## Forecasting model
 
 | Stage | Component | Role |
@@ -113,7 +115,7 @@ screen. Override the models with `GROQ_CHAT_MODEL`, `GROQ_STT_MODEL` and
 | `scenario` | `id = 1` | `hour` (0–72), `playing`, `updated_at` |
 | `train_readings` | `(train_id, hour)` | `pressure_drop`, `feed_pressure`, `permeate_flow`, `salt_rejection`, `energy_use`, `sdi`, `days_since_clean` |
 
-Reads are public (RLS select). The clock is writable by anyone with the site so a
+Reads are public (RLS select). The clock row is writable with the anon key so a
 phone can follow a laptop; readings are written with the service role by the
 simulator or by hand in the table editor. Full SQL:
 [`supabase/schema.sql`](supabase/schema.sql).
@@ -124,6 +126,8 @@ Vercel needs no configuration beyond env vars:
 
 | Variable | Where | Purpose |
 |----------|-------|---------|
+| `AYN_DEMO_PASSWORD` | Vercel + `.env.local` | Password gate; unset means the site is open |
+| `AYN_SESSION_SECRET` | Vercel + `.env.local` | Signs the 30-day session cookie (defaults to the password) |
 | `GROQ_API_KEY` | Vercel + `.env.local` | Ask Ayn chat, Mic, correction |
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel + `.env.local` | Realtime project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel + `.env.local` | Public read/write key |
@@ -139,7 +143,9 @@ The Mic needs a secure context: use the Vercel https URL, not a LAN IP.
   (`Ayn_ desalination early warning.html`) used real NOAA chlorophyll and HYCOM
   current snapshots.
 - Output-at-risk and fleet health are rough estimates.
-- The Supabase clock is deliberately writable — demo-grade, not production auth.
+- The password gate keeps the dashboard private, but the Supabase anon key is
+  public by design: someone who extracts it could still write the scenario row.
+  Demo-grade, not production auth.
 
 ## Also in this repo
 

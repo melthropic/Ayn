@@ -20,6 +20,9 @@ already running, Ctrl+C it.
 | Laptop | http://localhost:3000 **or** https://ayn-pi.vercel.app |
 | Phone | https://ayn-pi.vercel.app (must be https for the Mic) |
 
+Both ask for the demo password once; the browser then stays unlocked for 30 days.
+Local dev is only gated if `AYN_DEMO_PASSWORD` is in `.env.local`.
+
 Check the badge top-right: **Live · Supabase**. If it says *Simulated plant
 data*, that build has no Supabase env vars — see Troubleshooting.
 
@@ -60,5 +63,6 @@ or in the table editor set `scenario.hour` back to `0`.
 
 ## The one rule
 
-Writes are demo-grade: the `scenario` row is writable by anyone with the site.
-That is intentional for a live demo — do not put real data behind it.
+Writes are demo-grade: the `scenario` row is writable with the anon key, which
+is public by design. The password gate keeps the dashboard private, but do not
+put real data behind it.
