@@ -139,8 +139,11 @@ export function buildSnapshot(hour: number): AskSnapshot {
         already_past_limit: pastLimit,
         reaches_limit_within_72h: reaches,
         hours_to_limit_p50: pastLimit ? 0 : reaches ? Math.round(state.hoursToLimit) : null,
-        possible_as_early_as_h: pastLimit ? 0 : window.from,
-        possible_as_late_as_h: pastLimit ? 0 : window.to,
+        // A healthy train's band can still brush the limit inside the window,
+        // but saying "not expected within 72 hours, possibly in 45" only
+        // confuses the answer. Keep the range for trains that actually reach.
+        possible_as_early_as_h: pastLimit ? 0 : reaches ? window.from : null,
+        possible_as_late_as_h: pastLimit ? 0 : reaches ? window.to : null,
         points_below_limit: Number((CLEANING_LIMIT - state.pressureDrop).toFixed(1)),
       },
       flux_m3h: Math.round(metrics.permeateFlow),
