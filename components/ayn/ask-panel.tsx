@@ -17,7 +17,7 @@ import {
   type AskHealth,
   type AskTurn,
 } from '@/lib/ayn/ask'
-import { formatHours, rankedTrains } from '@/lib/ayn/model'
+import { HORIZON_HOURS, formatHours, rankedTrains, type TrainState } from '@/lib/ayn/model'
 import { cn } from '@/lib/utils'
 
 type MicState = 'idle' | 'listening' | 'transcribing'
@@ -62,11 +62,23 @@ function speechRecognition(): SpeechRecognitionCtor | undefined {
   return host.SpeechRecognition ?? host.webkitSpeechRecognition
 }
 
-const [seedFirst, seedSecond] = rankedTrains(0)
-const SEED: Exchange = {
-  id: 0,
-  question: 'Which train should we clean first?',
-  answer: `Clean ${seedFirst.id} first. It reaches the 15% limit in ${formatHours(seedFirst.hoursToLimit)}. ${seedSecond.id} is next at ${formatHours(seedSecond.hoursToLimit)}.`,
+// The starter answer is rebuilt at the viewed hour so it can never contradict
+// the train list and KPI strip beside it.
+function seedExchange(hour: number): Exchange {
+  const [first, second] = rankedTrains(hour)
+  const when = (t: TrainState) =>
+    t.hoursToLimit <= 0
+      ? 'now'
+      : t.hoursToLimit <= HORIZON_HOURS
+        ? `in ${formatHours(t.hoursToLimit)}`
+        : 'in over 72 hours'
+  const answer =
+    first.hoursToLimit <= 0
+      ? `Clean ${first.id} now: it is already past the 15% limit. ${second.id} is next, ${when(second)}.`
+      : first.hoursToLimit <= HORIZON_HOURS
+        ? `Clean ${first.id} first: it reaches the 15% limit ${when(first)}. ${second.id} is next, ${when(second)}.`
+        : `No train reaches the 15% limit within 72 hours yet. ${first.id} is the earliest, in over 72 hours.`
+  return { id: 0, question: 'Which train should we clean first?', answer }
 }
 const MIC_LABEL: Record<MicState, string> = { idle: 'Mic', listening: 'Listening', transcribing: 'Transcribing' }
 
@@ -109,7 +121,7 @@ function forSpeech(text: string) {
 
 export function AskPanel({ hour }: { hour: number }) {
   const [text, setText] = useState('')
-  const [exchanges, setExchanges] = useState<Exchange[]>([SEED])
+  const [exchanges, setExchanges] = useState<Exchange[]>(() => [seedExchange(hour)])
   const [mic, setMic] = useState<MicState>('idle')
   const [health, setHealth] = useState<AskHealth | null>(null)
   const [checking, setChecking] = useState(true)
@@ -171,6 +183,12 @@ export function AskPanel({ hour }: { hour: number }) {
     },
     [stopSpeaking],
   )
+
+  // Keep the starter answer in step with the shared clock until the operator
+  // asks something; after that the conversation is theirs.
+  useEffect(() => {
+    setExchanges((prev) => (prev.length === 1 && prev[0].id === 0 ? [seedExchange(hour)] : prev))
+  }, [hour])
 
   async function submit(question: string) {
     const q = question.trim()

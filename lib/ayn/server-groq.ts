@@ -54,9 +54,8 @@ export async function groqChat(messages: ChatTurn[], maxTokens = 500, model = ch
   // model families get neither parameter).
   const gptOss = model.includes('gpt-oss')
   const reasoning = gptOss ? { reasoning_effort: 'low', include_reasoning: false } : {}
-  let res: Response
-  try {
-    res = await fetch(`${GROQ_BASE}/chat/completions`, {
+  const send = () =>
+    fetch(`${GROQ_BASE}/chat/completions`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -68,6 +67,16 @@ export async function groqChat(messages: ChatTurn[], maxTokens = 500, model = ch
       }),
       signal: AbortSignal.timeout(25_000),
     })
+  let res: Response
+  try {
+    res = await send()
+    // The free Groq plan is rate-limited per minute, and a demo asks questions
+    // back to back. One short retry keeps a raw 429 off the screen.
+    const wait = retryAfterMs(res)
+    if ((res.status === 429 || res.status === 503) && wait !== null && wait <= 3_000) {
+      await new Promise((resolve) => setTimeout(resolve, wait))
+      res = await send()
+    }
   } catch {
     throw new GroqError('Could not reach Groq. Check the network and try again.')
   }
@@ -127,8 +136,21 @@ export async function groqTranscribe(
   return (data?.text ?? '').trim()
 }
 
+/** Seconds Groq asks us to wait, in milliseconds, when it sends the header. */
+function retryAfterMs(res: Response): number | null {
+  if (res.ok) return null
+  const header = res.headers.get('retry-after')
+  if (!header) return null
+  const seconds = Number(header)
+  return Number.isFinite(seconds) ? Math.max(0, Math.round(seconds * 1000)) : null
+}
+
 async function errorText(res: Response): Promise<string> {
   const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null
+  if (res.status === 429) {
+    console.warn('Groq rate limit:', body?.error?.message ?? 'HTTP 429')
+    return 'Ayn is answering faster than the free model plan allows. Wait a few seconds and ask again.'
+  }
   return body?.error?.message ?? `Groq answered HTTP ${res.status}.`
 }
 

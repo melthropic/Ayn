@@ -9,11 +9,16 @@
 // (with a local faster-whisper instead of Groq); point this client at it by
 // setting NEXT_PUBLIC_AYN_API=http://localhost:8000 before `pnpm dev`.
 import {
+  ALERT_EVENTS,
   CLEANING_LIMIT,
   HORIZON_HOURS,
   PLANTS,
   TRAINS,
+  fleetSummary,
+  formatClock,
   plantRisk,
+  rankedTrains,
+  riskStatus,
   trainForecast,
   trainMetrics,
   trainStateAt,
@@ -85,20 +90,25 @@ export async function askHealth(): Promise<AskHealth> {
   }
 }
 
-function bloomArrival(plant: Plant, from: number, threshold: number): number | '>72' {
+function bloomArrival(plant: Plant, from: number, threshold: number): number | null {
   for (let h = Math.ceil(from); h <= HORIZON_HOURS; h++) {
     if (plantRisk(plant, h) >= threshold) return Math.max(0, Math.round(h - from))
   }
-  return '>72'
+  return null
 }
 
 // Where the P10/P90 band of the pressure-drop forecast crosses the cleaning
-// limit: an optimistic and a pessimistic hour for the same crossing.
-function cleanWindow(trainId: string) {
-  const points = trainForecast(trainId).filter((p) => p.hour >= 0)
+// limit, in hours from the viewed hour. The high edge crossing is the earliest
+// the train could reach the limit; the low edge crossing is the latest.
+// trainForecast works in absolute scenario hours, so subtract the viewed hour.
+function cleanWindow(trainId: string, fromHour: number) {
+  const points = trainForecast(trainId).filter((p) => p.hour >= Math.ceil(fromHour))
   const earliest = points.find((p) => p.band[1] >= CLEANING_LIMIT)
   const latest = points.find((p) => p.band[0] >= CLEANING_LIMIT)
-  return { from: earliest ? earliest.hour : null, to: latest ? latest.hour : null }
+  return {
+    from: earliest ? Math.max(0, Math.round(earliest.hour - fromHour)) : null,
+    to: latest ? Math.max(0, Math.round(latest.hour - fromHour)) : null,
+  }
 }
 
 export interface AskSnapshot {
@@ -108,14 +118,17 @@ export interface AskSnapshot {
 /** The dashboard numbers the assistant answers from, at the viewed hour. */
 export function buildSnapshot(hour: number): AskSnapshot {
   const viewed = Math.max(0, Math.min(HORIZON_HOURS, Math.round(hour)))
+  const summary = fleetSummary(viewed)
+  const ranked = rankedTrains(viewed)
 
   const trains = TRAINS.map((spec) => {
     const plant = PLANTS.find((p) => p.id === spec.plant)!
-    const state = trainStateAt(spec, hour)
-    const metrics = trainMetrics(spec.id, hour)
-    const risks = trainElementRisks(spec.id, hour)
-    const window = cleanWindow(spec.id)
-    const reaches = state.hoursToLimit > 0 && state.hoursToLimit <= HORIZON_HOURS
+    const state = trainStateAt(spec, viewed)
+    const metrics = trainMetrics(spec.id, viewed)
+    const risks = trainElementRisks(spec.id, viewed)
+    const window = cleanWindow(spec.id, viewed)
+    const pastLimit = state.pressureDrop >= CLEANING_LIMIT
+    const reaches = !pastLimit && state.hoursToLimit <= HORIZON_HOURS
     return {
       id: spec.id,
       plant: plant.name,
@@ -123,14 +136,16 @@ export function buildSnapshot(hour: number): AskSnapshot {
       health: state.health,
       dp_pct_above_clean: Number(state.pressureDrop.toFixed(1)),
       hours_to_clean: {
+        already_past_limit: pastLimit,
         reaches_limit_within_72h: reaches,
-        hours_to_limit_p50: reaches ? Math.round(state.hoursToLimit) : null,
-        likely_window_h: reaches ? window : null,
-        possible_as_early_as_h: reaches ? null : window.from,
+        hours_to_limit_p50: pastLimit ? 0 : reaches ? Math.round(state.hoursToLimit) : null,
+        possible_as_early_as_h: pastLimit ? 0 : window.from,
+        possible_as_late_as_h: pastLimit ? 0 : window.to,
         points_below_limit: Number((CLEANING_LIMIT - state.pressureDrop).toFixed(1)),
       },
       flux_m3h: Math.round(metrics.permeateFlow),
-      salt_passage_pct: Number((100 - metrics.saltRejection).toFixed(2)),
+      feed_pressure_bar: Number(metrics.feedPressure.toFixed(1)),
+      salt_rejection_pct: Number(metrics.saltRejection.toFixed(2)),
       days_since_clean: Math.round(metrics.daysSinceClean),
       energy_kwh_m3: Number(metrics.energyUse.toFixed(2)),
       feed_sdi: Number(metrics.sdi.toFixed(1)),
@@ -139,28 +154,37 @@ export function buildSnapshot(hour: number): AskSnapshot {
     }
   })
 
-  const order = [...trains]
-    .sort((a, b) => {
-      const key = (t: (typeof trains)[number]) =>
-        t.hours_to_clean.reaches_limit_within_72h
-          ? (t.hours_to_clean.hours_to_limit_p50 as number)
-          : 1000 - t.dp_pct_above_clean
-      return key(a) - key(b)
-    })
-    .map((t) => t.id)
-
   return {
     simulated: true,
     view_hours_ahead: viewed,
+    scenario_clock_gst: formatClock(viewed).stamp,
     cleaning_limit_pct: CLEANING_LIMIT,
-    clean_first_order: order,
+    fleet: {
+      health_pct: summary.fleetHealth,
+      health_status: summary.fleetStatus,
+      top_risk_plant: summary.topRisk.plant.name,
+      top_risk_pct: Math.round(summary.topRisk.risk * 100),
+      output_at_risk_migd: summary.outputAtRisk,
+      total_output_migd: summary.totalOutput,
+      trains_at_risk: summary.trainsAtRisk,
+      time_to_critical_h: summary.timeToCritical,
+    },
+    clean_first_order: ranked.map((t) => t.id),
     trains,
-    plants: PLANTS.map((plant) => ({
-      plant: plant.name,
-      intake_risk_pct: Math.round(plantRisk(plant, hour) * 100),
-      bloom_watch_in_h: bloomArrival(plant, hour, 0.4),
-      bloom_critical_in_h: bloomArrival(plant, hour, 0.7),
-    })),
+    plants: PLANTS.map((plant) => {
+      const risk = plantRisk(plant, viewed)
+      return {
+        plant: plant.name,
+        intake_risk_pct: Math.round(risk * 100),
+        intake_risk_level: riskStatus(risk),
+        bloom_watch_in_h: bloomArrival(plant, viewed, 0.4),
+        bloom_critical_in_h: bloomArrival(plant, viewed, 0.7),
+      }
+    }),
+    alerts: ALERT_EVENTS.filter((a) => a.hour <= viewed)
+      .slice(-5)
+      .reverse()
+      .map((a) => ({ at_hour: a.hour, status: a.status, title: a.title })),
     notes:
       'Plant telemetry is simulated from pressure-drop curves and there is no feed-temperature series. The 3D view has no per-pipe sensors.',
   }
