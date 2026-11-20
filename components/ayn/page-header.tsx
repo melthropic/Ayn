@@ -23,7 +23,7 @@ export function PageHeader({ live }: Props) {
     <header className="flex flex-wrap items-center justify-between gap-4 py-6">
       <div className="flex items-center gap-3">
         <Link href="/" aria-label="Ayn home" className="rounded-full">
-          <Logo animated className="size-9" />
+          <Logo className="size-9" />
         </Link>
         <div>
           <h1 className="text-2xl font-semibold leading-none tracking-tight">Ayn</h1>

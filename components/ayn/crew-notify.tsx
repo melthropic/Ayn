@@ -22,7 +22,7 @@ export interface CrewProps {
 const clock = (at: string | number) =>
   new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Dubai' }).format(new Date(at))
 
-type Line = { key: string; tone: 'muted' | 'watch' | 'healthy' | 'critical'; text: string; pulse?: boolean }
+type Line = { key: string; tone: 'muted' | 'watch' | 'healthy' | 'critical'; text: string }
 
 function statusLine({ row, pending, tracking }: CrewProps): Line | null {
   const rowAt = row ? Date.parse(row.sent_at) : 0
@@ -46,7 +46,6 @@ function statusLine({ row, pending, tracking }: CrewProps): Line | null {
       key: `sent-${row.id}`,
       tone: 'watch',
       text: `${how} at ${clock(row.sent_at)} GST, waiting for acknowledgement`,
-      pulse: true,
     }
   }
   if (pending?.state === 'sent') {
@@ -99,12 +98,7 @@ export function CrewNotify(props: CrewProps) {
             line.tone === 'critical' ? 'text-critical' : line.tone !== 'healthy' && 'text-muted-foreground',
           )}
         >
-          <span aria-hidden className="relative mt-1.5 flex size-2 shrink-0">
-            {line.pulse && (
-              <span className={cn('ayn-pulse absolute inline-flex size-full rounded-full', DOT[line.tone])} />
-            )}
-            <span className={cn('relative inline-flex size-2 rounded-full', DOT[line.tone])} />
-          </span>
+          <span aria-hidden className={cn('mt-1.5 size-2 shrink-0 rounded-full', DOT[line.tone])} />
           <span className="text-pretty">{line.text}</span>
         </p>
       )}

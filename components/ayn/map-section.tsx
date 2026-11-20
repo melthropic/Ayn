@@ -61,13 +61,7 @@ export function MapSection({
       </div>
 
       <div className="aspect-[16/10] border-y border-border sm:aspect-[1000/460]">
-        {loading ? (
-          <Skeleton className="size-full rounded-none" />
-        ) : (
-          <div className="ayn-fade size-full">
-            <BloomMap hour={hour} />
-          </div>
-        )}
+        {loading ? <Skeleton className="size-full rounded-none" /> : <BloomMap hour={hour} />}
       </div>
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-5 py-4 sm:flex-nowrap sm:px-6">

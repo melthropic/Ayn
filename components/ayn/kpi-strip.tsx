@@ -75,16 +75,13 @@ export function KpiStrip({ summary, loading }: { summary: Summary; loading: bool
               </>
             ) : (
               <>
-                <dd className="ayn-fade flex items-baseline gap-1.5">
+                <dd className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-semibold tracking-tight">
                     {k.count === undefined ? k.value : <CountUp value={k.count} suffix={k.suffix} />}
                   </span>
                   {k.unit && <span className="text-sm text-muted-foreground">{k.unit}</span>}
                 </dd>
-                <dd
-                  className="ayn-fade flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground"
-                  style={{ '--ayn-delay': '80ms' } as React.CSSProperties}
-                >
+                <dd className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                   <StatusDot status={k.status} className="text-foreground" />
                   <span>{k.note}</span>
                 </dd>

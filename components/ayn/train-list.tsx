@@ -18,9 +18,13 @@ const COLS = 'md:grid-cols-[2rem_minmax(7rem,1fr)_minmax(7rem,1.2fr)_7rem_5.5rem
 export function HealthBar({ value, status }: { value: number; status: TrainState['status'] }) {
   return (
     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
+      {/* Scaled, not resized, so playback moves it without a layout per frame. */}
       <div
-        className={cn('h-full rounded-full transition-[width,background-color] duration-500', statusBg[status])}
-        style={{ width: `${value}%` }}
+        className={cn(
+          'h-full w-full origin-left rounded-full transition-[transform,background-color] duration-500 rtl:origin-right',
+          statusBg[status],
+        )}
+        style={{ transform: `scaleX(${value / 100})` }}
       />
     </div>
   )
@@ -64,7 +68,7 @@ export function TrainList({ trains, loading, onSelect }: Props) {
           ))}
         </div>
       ) : (
-        <ol ref={listRef} className="ayn-fade divide-y divide-border border-t border-border md:border-t-0">
+        <ol ref={listRef} className="divide-y divide-border border-t border-border md:border-t-0">
           {trains.map((t, i) => {
             const plant = PLANTS.find((p) => p.id === t.plant)!
             return (
@@ -92,7 +96,7 @@ export function TrainList({ trains, loading, onSelect }: Props) {
                   </span>
                   <span className="hidden text-sm md:block">{formatHours(t.hoursToLimit)}</span>
                   <span className="col-start-3 row-start-1 flex flex-col items-end gap-0.5 md:col-start-auto md:row-start-auto md:items-start">
-                    <StatusDot status={t.status} pulse={t.status === 'critical'} />
+                    <StatusDot status={t.status} />
                     <span className="text-xs text-muted-foreground md:hidden">
                       {`${formatHours(t.hoursToLimit)} to limit`}
                     </span>

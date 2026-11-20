@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useScenarioPlayback } from '@/hooks/use-scenario-playback'
 import { HORIZON_HOURS, fleetSummary, rankedTrains, riskStatus } from '@/lib/ayn/model'
-import { cn } from '@/lib/utils'
 import { useCrewNotify } from '@/lib/ayn/use-crew-notify'
 import { useLiveData } from '@/lib/ayn/use-live-data'
 import { AlertFeed } from './alert-feed'
@@ -22,19 +21,9 @@ const newRunId = () => Math.random().toString(36).slice(2, 10)
 /** How long a follower takes to glide to a newly published hour. */
 const FOLLOW_MS = 320
 
-/** Wraps a dashboard block so it rises into place, `delay` ms after load. */
-function Rise({ delay, className, children }: { delay: number; className?: string; children: React.ReactNode }) {
-  return (
-    <div className={cn('ayn-rise', className)} style={{ '--ayn-delay': `${delay}ms` } as React.CSSProperties}>
-      {children}
-    </div>
-  )
-}
-
 export function Dashboard() {
   const { hour, setHour, playing, setPlaying, toggle, hasRun } = useScenarioPlayback()
   const live = useLiveData()
-  const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   // The shared clock: whatever Supabase says, unless this device is the one
   // moving it. Once someone touches the timeline, this device publishes.
@@ -82,11 +71,6 @@ export function Dashboard() {
     live.writeHour(hour)
   }, [hour, live.writeHour])
 
-  useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), 700)
-    return () => clearTimeout(t)
-  }, [])
-
   const trains = rankedTrains(hour)
   const summary = fleetSummary(hour)
   const level = riskStatus(summary.topRisk.risk)
@@ -118,82 +102,66 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-      <Rise delay={0}>
-        <PageHeader live={{ enabled: live.enabled, connected: live.connected }} />
-      </Rise>
-      <main className="flex flex-col gap-6">
-        <Rise delay={80}>
-          <MapSection
-            hour={hour}
-            playing={playing}
-            loading={loading}
-            onToggle={() => {
-              takeControl()
-              if (!playing && (hour === 0 || hour >= HORIZON_HOURS)) startRun()
-              toggle()
-            }}
-            onReset={() => {
-              takeControl()
-              startRun()
-              setPlaying(false)
-              setHour(0)
-            }}
-            onHourChange={(h) => {
-              takeControl()
-              setPlaying(false)
-              setHour(h)
-            }}
-            live={live.enabled ? { connected: live.connected } : undefined}
-          />
-        </Rise>
-        <Rise delay={160}>
-          <KpiStrip summary={summary} loading={loading} />
-        </Rise>
+      <PageHeader live={{ enabled: live.enabled, connected: live.connected }} />
+      <main className="ayn-rise flex flex-col gap-6">
+        <MapSection
+          hour={hour}
+          playing={playing}
+          loading={false}
+          onToggle={() => {
+            takeControl()
+            if (!playing && (hour === 0 || hour >= HORIZON_HOURS)) startRun()
+            toggle()
+          }}
+          onReset={() => {
+            takeControl()
+            startRun()
+            setPlaying(false)
+            setHour(0)
+          }}
+          onHourChange={(h) => {
+            takeControl()
+            setPlaying(false)
+            setHour(h)
+          }}
+          live={live.enabled ? { connected: live.connected } : undefined}
+        />
+        <KpiStrip summary={summary} loading={false} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
           <div className="flex flex-col gap-6">
-            <Rise delay={240}>
-              <TrainList trains={trains} loading={loading} onSelect={setSelectedId} />
-            </Rise>
-            <Rise delay={400} className="hidden lg:block">
+            <TrainList trains={trains} loading={false} onSelect={setSelectedId} />
+            <div className="hidden lg:block">
               <PlantView trains={trains} hour={hour} onSelect={setSelectedId} />
-            </Rise>
+            </div>
           </div>
           <div className="flex flex-col gap-6">
-            <Rise delay={240}>
-              <RecommendationCard
-                level={level}
-                topTrain={trains[0]}
-                riskPlant={summary.topRisk.plant.name}
-                timeToCritical={summary.timeToCritical}
-                loading={loading}
-                onOpenTrain={setSelectedId}
-                crew={
-                  crew.config?.telegram
-                    ? {
-                        trainId: top.id,
-                        row: crew.latestFor(top.id),
-                        pending: crew.pending[top.id] ?? null,
-                        tracking: crew.config.tracking,
-                        urgent: level !== 'healthy' || top.status !== 'healthy',
-                        onNotify: () => void crew.send(top.id, hour, 'manual'),
-                      }
-                    : undefined
-                }
-              />
-            </Rise>
-            <Rise delay={320}>
-              <AskPanel hour={hour} />
-            </Rise>
-            <Rise delay={400}>
-              <AlertFeed hour={hour} hasRun={hasRun} loading={loading} />
-            </Rise>
-            <Rise delay={480}>
-              <DataSources />
-            </Rise>
-            <Rise delay={480} className="lg:hidden">
+            <RecommendationCard
+              level={level}
+              topTrain={trains[0]}
+              riskPlant={summary.topRisk.plant.name}
+              timeToCritical={summary.timeToCritical}
+              loading={false}
+              onOpenTrain={setSelectedId}
+              crew={
+                crew.config?.telegram
+                  ? {
+                      trainId: top.id,
+                      row: crew.latestFor(top.id),
+                      pending: crew.pending[top.id] ?? null,
+                      tracking: crew.config.tracking,
+                      urgent: level !== 'healthy' || top.status !== 'healthy',
+                      onNotify: () => void crew.send(top.id, hour, 'manual'),
+                    }
+                  : undefined
+              }
+            />
+            <AskPanel hour={hour} />
+            <AlertFeed hour={hour} hasRun={hasRun} loading={false} />
+            <DataSources />
+            <div className="lg:hidden">
               <PlantView trains={trains} hour={hour} onSelect={setSelectedId} />
-            </Rise>
+            </div>
           </div>
         </div>
       </main>

@@ -30,7 +30,7 @@ function copyFor(level: Status, t: TrainState, riskPlant: string, ttc: number | 
     return {
       headline:
         t.hoursToLimit <= 0
-          ? `Clean ${t.id} now — it is at the ${CLEANING_LIMIT}% limit`
+          ? `Clean ${t.id} now: it is at the ${CLEANING_LIMIT}% limit`
           : `Clean ${t.id} within ${formatHours(t.hoursToLimit)}`,
       actions: [
         `Take ${t.id} offline and start the clean in place cycle.`,
@@ -69,12 +69,7 @@ export function RecommendationCard({ level, topTrain, riskPlant, timeToCritical,
           key={level}
           className="ayn-pop inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-sm font-medium"
         >
-          <span aria-hidden className="relative flex size-2">
-            {level === 'critical' && (
-              <span className={cn('ayn-pulse absolute inline-flex size-full rounded-full', statusBg[level])} />
-            )}
-            <span className={cn('relative inline-flex size-2 rounded-full', statusBg[level])} />
-          </span>
+          <span aria-hidden className={cn('size-2 rounded-full', statusBg[level])} />
           {tone.word}
         </span>
       </div>

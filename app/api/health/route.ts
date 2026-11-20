@@ -17,7 +17,7 @@ export async function GET() {
       ai: false,
       stt: false,
       model: null,
-      note: 'GROQ_API_KEY is not set. Add it to the project environment variables (Vercel: Settings → Environment Variables) and redeploy — or to .env.local when running locally.',
+      note: 'GROQ_API_KEY is not set. Add it in Vercel (Settings, Environment Variables) and redeploy, or to .env.local when running locally',
     })
   }
   return Response.json({

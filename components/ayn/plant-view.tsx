@@ -62,8 +62,11 @@ export function PlantView({ trains, hour, onSelect }: Props) {
               <StatusDot status={t.status} className="text-xs" />
               <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-muted">
                 <span
-                  className={cn('block h-full transition-[width,background-color] duration-500', statusBg[t.status])}
-                  style={{ width: `${t.health}%` }}
+                  className={cn(
+                    'block h-full w-full origin-left transition-[transform,background-color] duration-500 rtl:origin-right',
+                    statusBg[t.status],
+                  )}
+                  style={{ transform: `scaleX(${t.health / 100})` }}
                 />
               </span>
             </button>

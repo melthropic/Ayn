@@ -157,20 +157,6 @@
   animation: ayn-ring-pulse 1.4s ease-out infinite;
 }
 
-@keyframes ayn-bloom-breathe {
-  0%,
-  100% {
-    opacity: 0.85;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.ayn-bloom-breathe {
-  animation: ayn-bloom-breathe 4s ease-in-out infinite;
-}
-
 /* Ported Three.js plant view: the scene owns its canvas and overlay layers,
    mounting them inside this element. */
 .plant3d {
@@ -232,11 +218,16 @@
   background: rgb(29 72 83 / 0.92);
 }
 
-/* Entrance: sections rise into place, staggered with --ayn-delay. */
+/* Motion: one easing curve. Entrances 300 to 500 ms, feedback 150 ms. */
+:root {
+  --ayn-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Entrance: the main content fades and rises once on load. */
 @keyframes ayn-rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -245,7 +236,7 @@
 }
 
 .ayn-rise {
-  animation: ayn-rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: ayn-rise 450ms var(--ayn-ease) both;
   animation-delay: var(--ayn-delay, 0ms);
 }
 
@@ -255,29 +246,22 @@
   }
 }
 
-/* Content replacing a skeleton. */
+/* Text that appears in place, like a status or error line. */
 .ayn-fade {
-  animation: ayn-fade 450ms ease-out both;
+  animation: ayn-fade 300ms var(--ayn-ease) both;
   animation-delay: var(--ayn-delay, 0ms);
 }
 
 @keyframes ayn-pop {
-  0% {
+  from {
     opacity: 0;
-    transform: scale(0.85);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-  100% {
-    transform: scale(1);
+    transform: scale(0.96);
   }
 }
 
 /* A status badge changing level. */
 .ayn-pop {
-  animation: ayn-pop 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: ayn-pop 300ms var(--ayn-ease) both;
 }
 
 @keyframes ayn-swap {
@@ -289,7 +273,7 @@
 
 /* Recommendation copy when the level changes. */
 .ayn-swap {
-  animation: ayn-swap 400ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: ayn-swap 400ms var(--ayn-ease) both;
 }
 
 @keyframes ayn-slide-in {
@@ -311,7 +295,7 @@
 /* A new alert slides in and its row glows briefly in its status colour. */
 .ayn-alert-new {
   animation:
-    ayn-slide-in 450ms cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    ayn-slide-in 450ms var(--ayn-ease) both,
     ayn-flash 1.8s ease-out;
 }
 
@@ -327,7 +311,7 @@
 
 .ayn-draw {
   stroke-dasharray: 100;
-  animation: ayn-draw 1.1s cubic-bezier(0.6, 0, 0.2, 1) both;
+  animation: ayn-draw 1.1s var(--ayn-ease) both;
   animation-delay: var(--ayn-delay, 0ms);
 }
 
@@ -341,27 +325,8 @@
 .ayn-iris-in {
   transform-box: fill-box;
   transform-origin: center;
-  animation: ayn-iris-in 500ms cubic-bezier(0.2, 0.7, 0.2, 1.4) both;
+  animation: ayn-iris-in 500ms var(--ayn-ease) both;
   animation-delay: var(--ayn-delay, 0ms);
-}
-
-/* Logo: the eye blinks every few seconds. */
-@keyframes ayn-blink {
-  0%,
-  94%,
-  100% {
-    transform: scaleY(1);
-  }
-  97% {
-    transform: scaleY(0.08);
-  }
-}
-
-.ayn-blink {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: ayn-blink 7s ease-in-out infinite;
-  animation-delay: 2s;
 }
 
 /* Map: dashes flow along the forecast track and the surface currents. */
@@ -386,28 +351,13 @@
   animation: ayn-current 2.4s linear infinite;
 }
 
-/* Home: slow glow drifting behind the hero. */
-@keyframes ayn-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(4%, 6%) scale(1.08);
-  }
-}
-
-.ayn-drift {
-  animation: ayn-drift 18s ease-in-out infinite;
-}
-
 /* Scroll reveal: Reveal sets data-shown when the element enters the view. */
 .ayn-reveal {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(10px);
   transition:
-    opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    opacity 450ms var(--ayn-ease),
+    transform 450ms var(--ayn-ease);
   transition-delay: var(--ayn-delay, 0ms);
 }
 
@@ -418,7 +368,7 @@
 
 /* Arrow nudges right when its link is hovered. */
 .ayn-nudge {
-  transition: transform 200ms ease-out;
+  transition: transform 150ms var(--ayn-ease);
 }
 
 a:hover .ayn-nudge,

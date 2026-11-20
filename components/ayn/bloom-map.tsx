@@ -137,7 +137,6 @@ export function BloomMap({ hour, bloomFade = 1 }: Props) {
           </g>
         ))}
         <g
-          className="ayn-bloom-breathe"
           transform={`translate(${bloom.x} ${bloom.y}) rotate(${bloom.rotation}) scale(${bloom.radius / 50})`}
           opacity={bloom.intensity * bloomFade}
         >

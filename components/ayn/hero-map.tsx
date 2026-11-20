@@ -38,7 +38,7 @@ export function HeroMap() {
   const status = riskStatus(top.risk)
 
   return (
-    <figure className="relative overflow-hidden rounded-xl border border-border bg-card shadow-2xl shadow-black/20">
+    <figure className="relative overflow-hidden rounded-xl border border-border bg-card">
       <div className="aspect-[1000/460]">
         <BloomMap hour={hour} bloomFade={fade} />
       </div>
@@ -54,7 +54,10 @@ export function HeroMap() {
         </span>
       </figcaption>
       <div className="absolute inset-x-0 top-0 h-0.5 bg-border" aria-hidden>
-        <div className="h-full bg-bloom" style={{ width: `${(hour / HORIZON_HOURS) * 100}%` }} />
+        <div
+          className="h-full w-full origin-left bg-bloom rtl:origin-right"
+          style={{ transform: `scaleX(${hour / HORIZON_HOURS})` }}
+        />
       </div>
     </figure>
   )

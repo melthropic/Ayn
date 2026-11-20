@@ -11,8 +11,6 @@ import { Logo } from './logo'
 import { Reveal } from './reveal'
 import { ThemeToggle } from './theme-toggle'
 
-const delay = (ms: number) => ({ '--ayn-delay': `${ms}ms` }) as React.CSSProperties
-
 const STEPS = [
   {
     icon: Waves,
@@ -46,23 +44,9 @@ export function Home() {
   ]
 
   return (
-    <div className="relative isolate overflow-x-clip">
-      {/* Background: faint grid and a slow glow behind the hero. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[46rem] overflow-hidden">
-        <div className="ayn-drift absolute -top-40 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
-        <div className="ayn-drift absolute top-20 -right-40 size-[28rem] rounded-full bg-bloom/10 blur-3xl [animation-delay:-9s]" />
-        <div
-          className="absolute inset-0 opacity-40 [mask-image:linear-gradient(to_bottom,black,transparent)]"
-          style={{
-            backgroundImage:
-              'linear-gradient(var(--map-grid) 1px, transparent 1px), linear-gradient(90deg, var(--map-grid) 1px, transparent 1px)',
-            backgroundSize: '56px 56px',
-          }}
-        />
-      </div>
-
+    <div>
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <header className="ayn-rise flex items-center justify-between gap-4 py-6">
+        <header className="flex items-center justify-between gap-4 py-6">
           <Link href="/" className="flex items-center gap-3 rounded-lg" aria-label="Ayn home">
             <Logo animated className="size-9" />
             <span className="text-2xl font-semibold leading-none tracking-tight">Ayn</span>
@@ -70,7 +54,7 @@ export function Home() {
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className={cn(buttonVariants({ variant: 'outline' }), 'hidden rounded-full px-4 sm:inline-flex')}
+              className={cn(buttonVariants({ variant: 'outline' }), 'hidden px-4 sm:inline-flex')}
             >
               Dashboard
             </Link>
@@ -81,49 +65,40 @@ export function Home() {
         <main>
           <section
             aria-labelledby="hero-heading"
-            className="grid items-center gap-10 pt-6 pb-16 sm:pt-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14 lg:pb-24"
+            className="ayn-rise grid items-center gap-10 pt-6 pb-16 sm:pt-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14 lg:pb-24"
           >
             <div>
-              <p
-                className="ayn-rise inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-sm text-muted-foreground backdrop-blur"
-                style={delay(100)}
-              >
-                <span aria-hidden className="relative flex size-2">
-                  <span className="ayn-pulse absolute inline-flex size-full rounded-full bg-bloom" />
-                  <span className="relative inline-flex size-2 rounded-full bg-bloom" />
-                </span>
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span aria-hidden className="size-2 rounded-full bg-bloom" />
                 Algal bloom early warning for UAE desalination
               </p>
               <h1
                 id="hero-heading"
-                className="ayn-rise mt-5 text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3.4rem] lg:leading-[1.05]"
-                style={delay(200)}
+                className="mt-4 text-4xl font-medium tracking-tight text-balance sm:text-5xl lg:text-[56px] lg:leading-[1.05]"
               >
                 See the bloom coming before it reaches the intake.
               </h1>
-              <p className="ayn-rise mt-5 max-w-xl text-lg text-muted-foreground text-pretty" style={delay(320)}>
+              <p className="mt-5 max-w-xl text-lg text-muted-foreground text-pretty">
                 {`Ayn forecasts where a chlorophyll patch is heading over the next ${HORIZON_HOURS} hours and ranks which reverse osmosis trains will need cleaning first at ${PLANTS.length} plants on the UAE coast.`}
               </p>
-              <div className="ayn-rise mt-8 flex flex-wrap items-center gap-3" style={delay(440)}>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
                   href="/dashboard"
-                  className={cn(buttonVariants({ size: 'lg' }), 'h-11 rounded-full px-5 text-base')}
+                  className={cn(buttonVariants({ size: 'lg' }), 'h-11 px-5 text-base')}
                 >
                   Open the dashboard
                   <ArrowRight className="ayn-nudge size-4 rtl:rotate-180" aria-hidden />
                 </Link>
                 <a
                   href="#how-it-works"
-                  className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'h-11 rounded-full px-5 text-base')}
+                  className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'h-11 px-5 text-base')}
                 >
                   How it works
                 </a>
               </div>
             </div>
 
-            <div className="ayn-rise" style={delay(300)}>
-              <HeroMap />
-            </div>
+            <HeroMap />
           </section>
 
           <Reveal as="section" className="overflow-hidden rounded-xl border border-border bg-border">
@@ -154,11 +129,11 @@ export function Home() {
                 <Reveal
                   as="li"
                   key={step.title}
-                  delay={i * 110}
-                  className="group relative flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-primary/50"
+                  delay={i * 50}
+                  className="group relative flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-colors duration-150 hover:border-primary/50"
                 >
                   <span className="flex items-center justify-between">
-                    <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                    <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary transition-colors duration-150 group-hover:bg-primary group-hover:text-primary-foreground">
                       <step.icon className="size-5" aria-hidden />
                     </span>
                     <span className="text-sm text-muted-foreground tabular-nums">{`0${i + 1}`}</span>
@@ -169,7 +144,7 @@ export function Home() {
               ))}
             </ol>
 
-            <Reveal delay={150} className="mt-4">
+            <Reveal className="mt-4">
               <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center">
                 <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-bloom/15 text-bloom">
                   <MonitorSmartphone className="size-5" aria-hidden />
@@ -185,10 +160,6 @@ export function Home() {
 
           <Reveal as="section" className="mb-20">
             <div className="relative overflow-hidden rounded-2xl border border-border bg-card px-6 py-10 sm:px-10">
-              <div
-                aria-hidden
-                className="ayn-drift absolute -top-24 -right-24 size-72 rounded-full bg-primary/15 blur-3xl"
-              />
               <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-2xl">
                   <h2 className="text-2xl font-semibold tracking-tight">Run the 72 hour scenario</h2>
@@ -199,7 +170,7 @@ export function Home() {
                 </div>
                 <Link
                   href="/dashboard"
-                  className={cn(buttonVariants({ size: 'lg' }), 'h-11 shrink-0 rounded-full px-5 text-base')}
+                  className={cn(buttonVariants({ size: 'lg' }), 'h-11 shrink-0 px-5 text-base')}
                 >
                   Open the dashboard
                   <ArrowRight className="ayn-nudge size-4 rtl:rotate-180" aria-hidden />
