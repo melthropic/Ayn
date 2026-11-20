@@ -1,5 +1,8 @@
+'use client'
+
 import { Skeleton } from '@/components/ui/skeleton'
 import { riskStatus, type Status, type fleetSummary } from '@/lib/ayn/model'
+import { CountUp } from './count-up'
 import { StatusDot } from './status-dot'
 
 type Summary = ReturnType<typeof fleetSummary>
@@ -7,6 +10,9 @@ type Summary = ReturnType<typeof fleetSummary>
 interface Kpi {
   label: string
   value: string
+  /** When set, the value is drawn as a number that counts and eases between hours. */
+  count?: number
+  suffix?: string
   unit?: string
   status: Status
   note: string
@@ -19,6 +25,7 @@ function buildKpis(s: Summary): Kpi[] {
     {
       label: 'Fleet health',
       value: `${s.fleetHealth}`,
+      count: s.fleetHealth,
       unit: '/ 100',
       status: s.fleetStatus,
       note: 'Average across 12 trains',
@@ -26,12 +33,15 @@ function buildKpis(s: Summary): Kpi[] {
     {
       label: 'Highest intake risk',
       value: `${Math.round(s.topRisk.risk * 100)}%`,
+      count: Math.round(s.topRisk.risk * 100),
+      suffix: '%',
       status: topStatus,
       note: `${s.topRisk.plant.name}, ${s.topRisk.plant.location}`,
     },
     {
       label: 'Output at risk',
       value: `${s.outputAtRisk}`,
+      count: s.outputAtRisk,
       unit: `of ${s.totalOutput} MIGD`,
       status: s.outputAtRisk === 0 ? 'healthy' : 'critical',
       note:
@@ -42,6 +52,7 @@ function buildKpis(s: Summary): Kpi[] {
     {
       label: 'Time to critical risk',
       value: ttc === null ? 'Over 72' : ttc === 0 ? 'Now' : `${Math.round(ttc)}`,
+      count: ttc === null || ttc === 0 ? undefined : Math.round(ttc),
       unit: ttc === 0 ? undefined : 'h',
       status: ttc === null ? 'healthy' : ttc <= 12 ? 'critical' : 'watch',
       note: ttc === 0 ? `${s.topRisk.plant.name} intake is critical` : `At ${s.topRisk.plant.name} intake`,
@@ -64,11 +75,16 @@ export function KpiStrip({ summary, loading }: { summary: Summary; loading: bool
               </>
             ) : (
               <>
-                <dd className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-semibold tracking-tight">{k.value}</span>
+                <dd className="ayn-fade flex items-baseline gap-1.5">
+                  <span className="text-3xl font-semibold tracking-tight">
+                    {k.count === undefined ? k.value : <CountUp value={k.count} suffix={k.suffix} />}
+                  </span>
                   {k.unit && <span className="text-sm text-muted-foreground">{k.unit}</span>}
                 </dd>
-                <dd className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                <dd
+                  className="ayn-fade flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground"
+                  style={{ '--ayn-delay': '80ms' } as React.CSSProperties}
+                >
                   <StatusDot status={k.status} className="text-foreground" />
                   <span>{k.note}</span>
                 </dd>

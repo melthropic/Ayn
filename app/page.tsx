@@ -1,5 +1,5 @@
-import { Dashboard } from '@/components/ayn/dashboard'
+import { Home } from '@/components/ayn/home'
 
 export default function Page() {
-  return <Dashboard />
+  return <Home />
 }

@@ -1,7 +1,7 @@
 import { BellOff } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ALERT_EVENTS } from '@/lib/ayn/model'
-import { StatusDot } from './status-dot'
+import { StatusDot, statusVar } from './status-dot'
 
 export function AlertFeed({ hour, hasRun, loading }: { hour: number; hasRun: boolean; loading: boolean }) {
   const alerts = hasRun ? ALERT_EVENTS.filter((a) => a.hour <= hour).reverse() : []
@@ -20,14 +20,18 @@ export function AlertFeed({ hour, hasRun, loading }: { hour: number; hasRun: boo
           <Skeleton className="h-14 w-full" />
         </div>
       ) : alerts.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 px-5 pt-4 pb-8 text-center">
+        <div className="ayn-fade flex flex-col items-center gap-2 px-5 pt-4 pb-8 text-center">
           <BellOff className="size-5 text-muted-foreground" aria-hidden />
           <p className="text-sm text-muted-foreground text-pretty">No alerts yet. Press play to run the bloom scenario.</p>
         </div>
       ) : (
         <ol className="flex max-h-96 flex-col divide-y divide-border overflow-y-auto border-t border-border" aria-live="polite">
           {alerts.map((a) => (
-            <li key={a.hour} className="flex flex-col gap-1 px-5 py-3.5">
+            <li
+              key={a.hour}
+              className="ayn-alert-new flex flex-col gap-1 px-5 py-3.5"
+              style={{ '--ayn-flash': statusVar[a.status] } as React.CSSProperties}
+            >
               <div className="flex items-center justify-between gap-3">
                 <StatusDot status={a.status} className="font-medium" />
                 <span className="text-sm text-muted-foreground">{`+${a.hour} h`}</span>

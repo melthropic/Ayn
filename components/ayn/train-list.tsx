@@ -65,7 +65,7 @@ export function TrainList({ trains, loading, reducedMotion, onSelect }: Props) {
           ))}
         </div>
       ) : (
-        <ol ref={listRef} className="divide-y divide-border border-t border-border md:border-t-0">
+        <ol ref={listRef} className="ayn-fade divide-y divide-border border-t border-border md:border-t-0">
           {trains.map((t, i) => {
             const plant = PLANTS.find((p) => p.id === t.plant)!
             return (
@@ -93,7 +93,7 @@ export function TrainList({ trains, loading, reducedMotion, onSelect }: Props) {
                   </span>
                   <span className="hidden text-sm md:block">{formatHours(t.hoursToLimit)}</span>
                   <span className="col-start-3 row-start-1 flex flex-col items-end gap-0.5 md:col-start-auto md:row-start-auto md:items-start">
-                    <StatusDot status={t.status} />
+                    <StatusDot status={t.status} pulse={t.status === 'critical'} />
                     <span className="text-xs text-muted-foreground md:hidden">
                       {`${formatHours(t.hoursToLimit)} to limit`}
                     </span>

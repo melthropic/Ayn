@@ -37,7 +37,7 @@ npm install
 echo "GROQ_API_KEY=gsk_..." >> .env.local
 
 # 3. Run
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:3000 (home) → /dashboard
 
 # 4. Supabase live mode (optional)
 #    run supabase/schema.sql in the SQL editor, then add the three

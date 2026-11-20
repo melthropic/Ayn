@@ -34,7 +34,13 @@ const LABEL_LAYOUT: Record<Plant['id'], { dx: number; dy: number; anchor: 'start
   C: { dx: -28, dy: 30, anchor: 'end' },
 }
 
-export function BloomMap({ hour }: { hour: number }) {
+interface Props {
+  hour: number
+  /** 0–1, multiplies the bloom opacity. The home page fades it out and back in when its loop restarts. */
+  bloomFade?: number
+}
+
+export function BloomMap({ hour, bloomFade = 1 }: Props) {
   const uid = useId().replace(/:/g, '')
   const bloom = bloomAt(hour)
 
@@ -98,7 +104,7 @@ export function BloomMap({ hour }: { hour: number }) {
 
       <g fill="none" stroke="var(--muted-foreground)" strokeOpacity="0.35" strokeWidth="1.25" markerEnd={`url(#${uid}-arrow)`}>
         {CURRENTS.map((d) => (
-          <path key={d} d={d} />
+          <path key={d} d={d} className="ayn-current" />
         ))}
       </g>
 
@@ -116,7 +122,15 @@ export function BloomMap({ hour }: { hour: number }) {
       </g>
 
       <g mask={`url(#${uid}-water)`}>
-        <path d={track} fill="none" stroke="var(--bloom)" strokeOpacity="0.55" strokeWidth="1.5" strokeDasharray="4 6" />
+        <path
+          d={track}
+          fill="none"
+          stroke="var(--bloom)"
+          strokeOpacity="0.55"
+          strokeWidth="1.5"
+          strokeDasharray="4 6"
+          className="ayn-flow"
+        />
         {markers.map((m) => (
           <g key={m.h}>
             <circle cx={m.x} cy={m.y} r="3" fill="var(--bloom)" opacity="0.7" />
@@ -125,7 +139,7 @@ export function BloomMap({ hour }: { hour: number }) {
         <g
           className="ayn-bloom-breathe"
           transform={`translate(${bloom.x} ${bloom.y}) rotate(${bloom.rotation}) scale(${bloom.radius / 50})`}
-          opacity={bloom.intensity}
+          opacity={bloom.intensity * bloomFade}
         >
           <ellipse rx="110" ry="74" fill={`url(#${uid}-glow)`} />
           <g fill="var(--bloom)" filter={`url(#${uid}-soft)`}>

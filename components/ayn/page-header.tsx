@@ -1,5 +1,7 @@
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { Logo } from './logo'
 import { ThemeToggle } from './theme-toggle'
 
 interface Props {
@@ -20,11 +22,9 @@ export function PageHeader({ live }: Props) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 py-6">
       <div className="flex items-center gap-3">
-        <svg viewBox="0 0 32 32" className="size-9 shrink-0" aria-hidden>
-          <circle cx="16" cy="16" r="15" fill="none" stroke="var(--primary)" strokeWidth="1.5" />
-          <path d="M5 16c3-5.5 7-8 11-8s8 2.5 11 8c-3 5.5-7 8-11 8s-8-2.5-11-8Z" fill="none" stroke="var(--primary)" strokeWidth="1.5" />
-          <circle cx="16" cy="16" r="3.5" fill="var(--bloom)" />
-        </svg>
+        <Link href="/" aria-label="Ayn home" className="rounded-full">
+          <Logo animated className="size-9" />
+        </Link>
         <div>
           <h1 className="text-2xl font-semibold leading-none tracking-tight">Ayn</h1>
           <p className="mt-1.5 text-sm text-muted-foreground text-pretty">

@@ -62,8 +62,16 @@ export function RecommendationCard({ level, topTrain, riskPlant, timeToCritical,
         <h2 id="rec-heading" className="text-sm text-muted-foreground">
           Recommendation
         </h2>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-sm font-medium">
-          <span aria-hidden className={cn('size-2 rounded-full', statusBg[level])} />
+        <span
+          key={level}
+          className="ayn-pop inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-sm font-medium"
+        >
+          <span aria-hidden className="relative flex size-2">
+            {level === 'critical' && (
+              <span className={cn('ayn-pulse absolute inline-flex size-full rounded-full', statusBg[level])} />
+            )}
+            <span className={cn('relative inline-flex size-2 rounded-full', statusBg[level])} />
+          </span>
           {tone.word}
         </span>
       </div>
@@ -74,7 +82,7 @@ export function RecommendationCard({ level, topTrain, riskPlant, timeToCritical,
           <Skeleton className="h-4 w-5/6" />
         </div>
       ) : (
-        <>
+        <div key={level} className="ayn-swap">
           <p className="mt-3 text-xl font-semibold text-balance">{copy.headline}</p>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
             {copy.actions.map((a) => (
@@ -87,7 +95,7 @@ export function RecommendationCard({ level, topTrain, riskPlant, timeToCritical,
           <Button variant="outline" size="sm" className="mt-4 bg-card" onClick={() => onOpenTrain(topTrain.id)}>
             {`Open train ${topTrain.id}`}
           </Button>
-        </>
+        </div>
       )}
     </section>
   )

@@ -232,10 +232,219 @@
   background: rgb(29 72 83 / 0.92);
 }
 
+/* Entrance: sections rise into place, staggered with --ayn-delay. */
+@keyframes ayn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ayn-rise {
+  animation: ayn-rise 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--ayn-delay, 0ms);
+}
+
+@keyframes ayn-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Content replacing a skeleton. */
+.ayn-fade {
+  animation: ayn-fade 450ms ease-out both;
+  animation-delay: var(--ayn-delay, 0ms);
+}
+
+@keyframes ayn-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* A status badge changing level. */
+.ayn-pop {
+  animation: ayn-pop 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes ayn-swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* Recommendation copy when the level changes. */
+.ayn-swap {
+  animation: ayn-swap 400ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes ayn-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes ayn-flash {
+  from {
+    background-color: color-mix(in oklab, var(--ayn-flash, var(--watch)) 16%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+/* A new alert slides in and its row glows briefly in its status colour. */
+.ayn-alert-new {
+  animation:
+    ayn-slide-in 450ms cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    ayn-flash 1.8s ease-out;
+}
+
+/* Logo: the strokes draw themselves (paths use pathLength="100"). */
+@keyframes ayn-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.ayn-draw {
+  stroke-dasharray: 100;
+  animation: ayn-draw 1.1s cubic-bezier(0.6, 0, 0.2, 1) both;
+  animation-delay: var(--ayn-delay, 0ms);
+}
+
+@keyframes ayn-iris-in {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+.ayn-iris-in {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ayn-iris-in 500ms cubic-bezier(0.2, 0.7, 0.2, 1.4) both;
+  animation-delay: var(--ayn-delay, 0ms);
+}
+
+/* Logo: the eye blinks every few seconds. */
+@keyframes ayn-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.08);
+  }
+}
+
+.ayn-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ayn-blink 7s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Map: dashes flow along the forecast track and the surface currents. */
+@keyframes ayn-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.ayn-flow {
+  animation: ayn-flow 1.6s linear infinite;
+}
+
+@keyframes ayn-current {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+.ayn-current {
+  stroke-dasharray: 6 8;
+  animation: ayn-current 2.4s linear infinite;
+}
+
+/* Home: slow glow drifting behind the hero. */
+@keyframes ayn-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4%, 6%) scale(1.08);
+  }
+}
+
+.ayn-drift {
+  animation: ayn-drift 18s ease-in-out infinite;
+}
+
+/* Scroll reveal: Reveal sets data-shown when the element enters the view. */
+.ayn-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--ayn-delay, 0ms);
+}
+
+.ayn-reveal[data-shown] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Arrow nudges right when its link is hovered. */
+.ayn-nudge {
+  transition: transform 200ms ease-out;
+}
+
+a:hover .ayn-nudge,
+button:hover .ayn-nudge {
+  transform: translateX(3px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ayn-pulse,
-  .ayn-bloom-breathe {
+  .ayn-bloom-breathe,
+  .ayn-rise,
+  .ayn-fade,
+  .ayn-pop,
+  .ayn-swap,
+  .ayn-alert-new,
+  .ayn-draw,
+  .ayn-iris-in,
+  .ayn-blink,
+  .ayn-flow,
+  .ayn-current,
+  .ayn-drift {
     animation: none;
+  }
+  .ayn-reveal {
+    opacity: 1;
+    transform: none;
   }
   *,
   *::before,

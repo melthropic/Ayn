@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -8,6 +8,24 @@ export function LoginForm({ next }: { next: string }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // A short side-to-side shake on a wrong password, skipped for reduced motion.
+  function shake() {
+    const form = formRef.current
+    if (!form || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    form.animate(
+      [
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-6px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-4px)' },
+        { transform: 'translateX(4px)' },
+        { transform: 'translateX(0)' },
+      ],
+      { duration: 380, easing: 'ease-in-out' },
+    )
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
@@ -28,6 +46,7 @@ export function LoginForm({ next }: { next: string }) {
       const body = (await res.json().catch(() => null)) as { error?: string } | null
       setError(body?.error ?? 'That password is not right.')
       setBusy(false)
+      shake()
     } catch {
       setError('Could not reach the server. Try again.')
       setBusy(false)
@@ -35,7 +54,7 @@ export function LoginForm({ next }: { next: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-5 flex flex-col gap-3">
+    <form ref={formRef} onSubmit={onSubmit} className="mt-5 flex flex-col gap-3">
       <label htmlFor="demo-password" className="text-sm font-medium">
         Password
       </label>
@@ -52,7 +71,7 @@ export function LoginForm({ next }: { next: string }) {
         aria-describedby={error ? 'demo-password-error' : undefined}
       />
       {error && (
-        <p id="demo-password-error" role="alert" className="text-sm text-critical">
+        <p id="demo-password-error" role="alert" className="ayn-fade text-sm text-critical">
           {error}
         </p>
       )}

@@ -17,8 +17,10 @@ already running, Ctrl+C it.
 
 | Device | URL |
 |---|---|
-| Laptop | http://localhost:3000 **or** https://ayn-pi.vercel.app |
-| Phone | https://ayn-pi.vercel.app (must be https for the Mic) |
+| Laptop | http://localhost:3000/dashboard **or** https://ayn-pi.vercel.app/dashboard |
+| Phone | https://ayn-pi.vercel.app/dashboard (must be https for the Mic) |
+
+The root URL is the home screen; its **Open the dashboard** button goes to the same place.
 
 Both ask for the demo password once; the browser then stays unlocked for 30 days.
 Local dev is only gated if `AYN_DEMO_PASSWORD` is in `.env.local`.

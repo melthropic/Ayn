@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Logo } from '@/components/ayn/logo'
 import { SESSION_COOKIE, verifySessionToken } from '@/lib/ayn/auth'
 import { LoginForm } from './login-form'
 
@@ -31,24 +32,18 @@ export default async function LoginPage({
   return (
     <main className="grid min-h-dvh place-items-center px-4 py-10">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex items-center gap-3">
-          <svg viewBox="0 0 32 32" className="size-10 shrink-0" aria-hidden>
-            <circle cx="16" cy="16" r="15" fill="none" stroke="var(--primary)" strokeWidth="1.5" />
-            <path
-              d="M5 16c3-5.5 7-8 11-8s8 2.5 11 8c-3 5.5-7 8-11 8s-8-2.5-11-8Z"
-              fill="none"
-              stroke="var(--primary)"
-              strokeWidth="1.5"
-            />
-            <circle cx="16" cy="16" r="3.5" fill="var(--bloom)" />
-          </svg>
+        <div className="ayn-rise mb-8 flex items-center gap-3">
+          <Logo animated className="size-10" />
           <div>
             <p className="text-2xl font-semibold leading-none tracking-tight">Ayn</p>
             <p className="mt-1.5 text-sm text-muted-foreground">Private demo</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div
+          className="ayn-rise rounded-xl border border-border bg-card p-6"
+          style={{ '--ayn-delay': '150ms' } as React.CSSProperties}
+        >
           <h1 className="text-lg font-semibold">Enter the demo password</h1>
           <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
             This dashboard is limited to the demo devices. Sign in once — this browser stays unlocked for 30 days.
@@ -56,7 +51,10 @@ export default async function LoginPage({
           <LoginForm next={safeNext(next)} />
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p
+          className="ayn-rise mt-6 text-center text-xs text-muted-foreground"
+          style={{ '--ayn-delay': '300ms' } as React.CSSProperties}
+        >
           Early warning for algal blooms at UAE desalination intakes
         </p>
       </div>
