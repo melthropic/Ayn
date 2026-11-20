@@ -63,7 +63,7 @@ follows over realtime.
 
 Step-by-step run sheet: [`DEMO.md`](DEMO.md).
 
-**Private demo.** When `AYN_DEMO_PASSWORD` is set, the first visit on each device asks for it and a signed httpOnly cookie keeps that device unlocked for 30 days. The gate also covers `/api/*`, so the assistant cannot be used without it.
+**Private demo.** When `AYN_DEMO_PASSWORD` is set, the home page stays public and the dashboard asks for it on the first visit on each device and a signed httpOnly cookie keeps that device unlocked for 30 days. The gate also covers `/api/*`, so the assistant cannot be used without it.
 
 ## Forecasting model
 

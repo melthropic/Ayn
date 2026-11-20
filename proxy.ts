@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { SESSION_COOKIE, gatePassword, verifySessionToken } from '@/lib/ayn/auth'
 
-// Public paths: the login page and the auth endpoints themselves.
-const PUBLIC = new Set(['/login', '/api/auth/login', '/api/auth/logout'])
+// Public paths: the home page, the login page and the auth endpoints. The
+// dashboard and every other API route stay behind the password.
+const PUBLIC = new Set(['/', '/login', '/api/auth/login', '/api/auth/logout'])
 
 export async function proxy(request: NextRequest) {
   // No password configured means no gate (local development, previews).

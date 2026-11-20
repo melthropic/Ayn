@@ -12,10 +12,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-/** Only allow same-site paths, so ?next= cannot bounce anyone off-site. */
+/** Only allow same-site paths, so ?next= cannot bounce anyone off-site. The
+ * home page is public, so signing in goes to the dashboard by default. */
 function safeNext(value: string | string[] | undefined): string {
   const next = Array.isArray(value) ? value[0] : value
-  if (!next || !next.startsWith('/') || next.startsWith('//')) return '/'
+  if (!next || !next.startsWith('/') || next.startsWith('//')) return '/dashboard'
   return next
 }
 
@@ -24,10 +25,9 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string | string[] }>
 }) {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value
-  if (await verifySessionToken(token)) redirect('/')
-
   const { next } = await searchParams
+  const token = (await cookies()).get(SESSION_COOKIE)?.value
+  if (await verifySessionToken(token)) redirect(safeNext(next))
 
   return (
     <main className="grid min-h-dvh place-items-center px-4 py-10">
