@@ -2,19 +2,24 @@ import { Badge } from '@/components/ui/badge'
 
 const GROUPS = [
   {
-    badge: 'Real data',
-    dot: 'bg-healthy',
+    badge: 'Simulated in this demo',
+    dot: 'bg-watch',
     items: [
-      { name: 'Satellite chlorophyll', source: 'Copernicus Sentinel-3 OLCI', date: 'Snapshot 16 Nov 2026' },
-      { name: 'Ocean currents', source: 'Copernicus Marine surface currents', date: 'Snapshot 17 Nov 2026' },
+      { name: 'Bloom drift', source: 'Stylised patch drifting along the UAE coast', date: '72 h scenario' },
+      { name: 'Plant telemetry', source: '12 invented trains across 3 plants', date: 'Generated hourly' },
+      { name: 'Fouling model', source: 'Rule based pressure drop curve', date: 'Not calibrated' },
     ],
   },
   {
-    badge: 'Simulated',
-    dot: 'bg-watch',
+    badge: 'Real data in the first prototype',
+    dot: 'bg-healthy',
     items: [
-      { name: 'Plant telemetry', source: '12 invented trains across 3 plants', date: 'Generated hourly' },
-      { name: 'Fouling model', source: 'Rule based pressure drop curve', date: 'Not calibrated' },
+      {
+        name: 'Satellite chlorophyll',
+        source: 'NOAA CoastWatch, VIIRS and Sentinel-3 OLCI merged, 9 km',
+        date: 'Daily',
+      },
+      { name: 'Ocean currents', source: 'HYCOM/NCODA surface currents', date: 'Daily' },
     ],
   },
 ]
@@ -47,8 +52,9 @@ export function DataSources() {
         ))}
       </div>
       <p className="mt-5 border-t border-border pt-4 text-sm text-muted-foreground text-pretty">
-        Honest limits: satellite views miss blooms under cloud and at depth, and the drift forecast loses accuracy after
-        48 hours. Plant numbers are simulated, so use rankings to plan, not to replace on site readings.
+        This dashboard runs a simulated scenario so the 72 hours can be replayed on cue. The first prototype, a single
+        page in this project, read real satellite chlorophyll and currents. Satellite views miss blooms under cloud and
+        at depth, so use the rankings to plan, not to replace on site readings.
       </p>
     </section>
   )

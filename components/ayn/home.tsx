@@ -211,9 +211,9 @@ export function Home() {
 
         <footer className="border-t border-border py-8 text-sm text-muted-foreground">
           <p className="max-w-3xl text-pretty">
-            Satellite chlorophyll and ocean currents come from Copernicus snapshots. Plant telemetry is simulated and
-            the fouling curves are a teaching model, not a calibrated one. Use the rankings to plan, not to replace
-            on-site readings.
+            Ayn runs a simulated 72 hour scenario so it can be replayed on cue. Plant telemetry and the fouling curves
+            are a teaching model, not a calibrated one. The first prototype read real satellite chlorophyll and ocean
+            currents from NOAA CoastWatch and HYCOM. Use the rankings to plan, not to replace on-site readings.
           </p>
         </footer>
       </div>
