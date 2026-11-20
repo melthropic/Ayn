@@ -107,12 +107,37 @@ screen. Override the models with `GROQ_CHAT_MODEL`, `GROQ_STT_MODEL` and
 | POST | `/api/ask` | Answer a question from the current snapshot |
 | POST | `/api/transcribe` | Whisper transcription + correction pass |
 | GET | `/api/health` | Which Groq models are configured |
+| GET | `/api/notify` | Whether Telegram alerts and tracking are configured |
+| POST | `/api/notify` | Send a crew alert for one train to Telegram |
+| GET | `/api/notify/setup` | One-time Telegram setup: lists chats, sets the webhook |
+| POST | `/api/telegram` | Telegram webhook (Acknowledge taps); public, checks Telegram's secret header |
+
+## Notify crew
+
+The recommendation card has a **Notify crew** button. It posts the alert to a
+Telegram group with an **Acknowledge** button. Tapping it stamps the alert with
+who acknowledged it, and every open dashboard shows "Acknowledged by …" within
+a second. During playback, a train that reaches the cleaning limit is announced
+automatically, once per run, from the device driving the clock.
+
+Setup (about ten minutes):
+
+1. In Telegram, message **@BotFather**, send `/newbot` and copy the token.
+2. Create a group for the crew and add the bot to it. Send `/chatid` in the group.
+3. In the Supabase SQL editor, run [`supabase/notifications.sql`](supabase/notifications.sql).
+4. In Vercel, add `TELEGRAM_BOT_TOKEN` and `SUPABASE_SERVICE_ROLE_KEY`, then redeploy.
+5. Signed in, open `/api/notify/setup`. Copy your group's id from `chatsSeen` (it
+   starts with `-100`) into `TELEGRAM_CHAT_ID`, redeploy, and open
+   `/api/notify/setup` once more to point the webhook at the deployment.
+
+Without Supabase the button still sends, but acknowledgements only show in Telegram.
 
 ## Data model
 
 | Table | Key | Columns |
 |-------|-----|---------|
 | `scenario` | `id = 1` | `hour` (0–72), `playing`, `updated_at` |
+| `notifications` | `id` | `kind`, `train_id`, `plant_id`, `hour`, `message`, `sent_at`, `delivered`, `acknowledged_at`, `acknowledged_by` |
 | `train_readings` | `(train_id, hour)` | `pressure_drop`, `feed_pressure`, `permeate_flow`, `salt_rejection`, `energy_use`, `sdi`, `days_since_clean` |
 
 Reads are public (RLS select). The clock row is writable with the anon key so a
@@ -131,7 +156,9 @@ Vercel needs no configuration beyond env vars:
 | `GROQ_API_KEY` | Vercel + `.env.local` | Ask Ayn chat, Mic, correction |
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel + `.env.local` | Realtime project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel + `.env.local` | Public read/write key |
-| `SUPABASE_SERVICE_ROLE_KEY` | `.env.local` only | Simulator writes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Vercel + `.env.local`, server only | Simulator writes, crew alert records |
+| `TELEGRAM_BOT_TOKEN` | Vercel + `.env.local` | Notify crew bot, from @BotFather |
+| `TELEGRAM_CHAT_ID` | Vercel + `.env.local` | The crew group the bot posts to |
 
 The Mic needs a secure context: use the Vercel https URL, not a LAN IP.
 

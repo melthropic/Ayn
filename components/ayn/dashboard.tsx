@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useScenarioPlayback } from '@/hooks/use-scenario-playback'
-import { fleetSummary, rankedTrains, riskStatus } from '@/lib/ayn/model'
+import { HORIZON_HOURS, fleetSummary, rankedTrains, riskStatus } from '@/lib/ayn/model'
 import { cn } from '@/lib/utils'
+import { useCrewNotify } from '@/lib/ayn/use-crew-notify'
 import { useLiveData } from '@/lib/ayn/use-live-data'
 import { AlertFeed } from './alert-feed'
 import { AskPanel } from './ask-panel'
@@ -15,6 +16,8 @@ import { PlantView } from './plant-view'
 import { RecommendationCard } from './recommendation-card'
 import { TrainDrawer } from './train-drawer'
 import { TrainList } from './train-list'
+
+const newRunId = () => Math.random().toString(36).slice(2, 10)
 
 /** How long a follower takes to glide to a newly published hour. */
 const FOLLOW_MS = 320
@@ -89,6 +92,30 @@ export function Dashboard() {
   const level = riskStatus(summary.topRisk.risk)
   const selected = trains.find((t) => t.id === selectedId) ?? null
 
+  // Crew alerts. Each playback run announces a train once, the moment it
+  // reaches the cleaning limit, and only from the device driving the clock.
+  const crew = useCrewNotify()
+  const runId = useRef(newRunId())
+  const announced = useRef(new Set<string>())
+  const startRun = () => {
+    runId.current = newRunId()
+    announced.current = new Set()
+    crew.reset()
+  }
+  const critical = trains.filter((t) => t.status === 'critical').map((t) => t.id)
+  const criticalKey = critical.join(',')
+  useEffect(() => {
+    if (!playing || !driving.current || !crew.config?.telegram) return
+    for (const id of critical) {
+      if (announced.current.has(id)) continue
+      announced.current.add(id)
+      void crew.send(id, hour, 'auto', runId.current)
+    }
+    // Keyed on the set of critical trains, so it runs when that set changes
+    // rather than on every playback frame.
+  }, [playing, criticalKey, crew.config, crew.send])
+  const top = trains[0]
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
       <Rise delay={0}>
@@ -102,10 +129,12 @@ export function Dashboard() {
             loading={loading}
             onToggle={() => {
               takeControl()
+              if (!playing && (hour === 0 || hour >= HORIZON_HOURS)) startRun()
               toggle()
             }}
             onReset={() => {
               takeControl()
+              startRun()
               setPlaying(false)
               setHour(0)
             }}
@@ -139,6 +168,18 @@ export function Dashboard() {
                 timeToCritical={summary.timeToCritical}
                 loading={loading}
                 onOpenTrain={setSelectedId}
+                crew={
+                  crew.config?.telegram
+                    ? {
+                        trainId: top.id,
+                        row: crew.latestFor(top.id),
+                        pending: crew.pending[top.id] ?? null,
+                        tracking: crew.config.tracking,
+                        urgent: level !== 'healthy' || top.status !== 'healthy',
+                        onNotify: () => void crew.send(top.id, hour, 'manual'),
+                      }
+                    : undefined
+                }
               />
             </Rise>
             <Rise delay={320}>

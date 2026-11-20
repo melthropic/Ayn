@@ -40,6 +40,10 @@ data*, that build has no Supabase env vars — see Troubleshooting.
    A3 turns Critical on both screens in about a second.
 4. **Laptop** — delete that A3 row (row menu → Delete) and it returns to the
    simulated curve. Drag the slider back to **Now**.
+5. **Laptop** — press **Play**. At about **+50 h** A3 reaches the cleaning limit
+   and the crew's Telegram group gets the alert. **Phone** — tap
+   **Acknowledge** in Telegram. The laptop shows "Acknowledged by …" within a
+   second. (Needs the Notify crew setup in the README.)
 
 Optional: `npm run live` in the second terminal makes the whole dashboard
 animate by itself while you talk — stop it (Ctrl+C) before step 3.
@@ -62,6 +66,9 @@ or in the table editor set `scenario.hour` back to `0`.
 | Phone Mic does nothing | The page must be https (Vercel). `http://10.x.x.x:3000` will not work. |
 | Phone is on the wrong hour | Reload it once; after that it follows live. |
 | Two people fight over the slider | Only touch the timeline on the device that should drive. |
+| No **Notify crew** button | `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHAT_ID` is missing on that deployment. |
+| Alert arrives but Acknowledge does nothing | Open `/api/notify/setup` once while signed in, to point the webhook at this deployment. |
+| Telegram shows the acknowledgement but the dashboard does not | Run `supabase/notifications.sql`, and add `SUPABASE_SERVICE_ROLE_KEY` on Vercel. |
 
 ## The one rule
 

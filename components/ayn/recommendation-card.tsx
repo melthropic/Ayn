@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { CLEANING_LIMIT, formatHours, type PlantId, type Status, type TrainState } from '@/lib/ayn/model'
+import { CrewNotify, type CrewProps } from './crew-notify'
 import { statusBg } from './status-dot'
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   timeToCritical: number | null
   loading: boolean
   onOpenTrain: (id: string) => void
+  /** Notify crew controls for the top train, when Telegram is set up. */
+  crew?: CrewProps
 }
 
 const PLANT_NAME: Record<PlantId, string> = { A: 'Plant A', B: 'Plant B', C: 'Plant C' }
@@ -48,7 +51,7 @@ function copyFor(level: Status, t: TrainState, riskPlant: string, ttc: number | 
   }
 }
 
-export function RecommendationCard({ level, topTrain, riskPlant, timeToCritical, loading, onOpenTrain }: Props) {
+export function RecommendationCard({ level, topTrain, riskPlant, timeToCritical, loading, onOpenTrain, crew }: Props) {
   const tone = TONE[level]
   const copy = copyFor(level, topTrain, riskPlant, timeToCritical)
 
@@ -92,9 +95,12 @@ export function RecommendationCard({ level, topTrain, riskPlant, timeToCritical,
               </li>
             ))}
           </ul>
-          <Button variant="outline" size="sm" className="mt-4 bg-card" onClick={() => onOpenTrain(topTrain.id)}>
-            {`Open train ${topTrain.id}`}
-          </Button>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {crew && <CrewNotify {...crew} />}
+            <Button variant="outline" size="sm" className="bg-card" onClick={() => onOpenTrain(topTrain.id)}>
+              {`Open train ${topTrain.id}`}
+            </Button>
+          </div>
         </div>
       )}
     </section>
