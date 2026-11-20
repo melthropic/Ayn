@@ -988,9 +988,10 @@ buildBloomParticles();
 function label(txt){
   const cv=document.createElement("canvas");cv.width=128;cv.height=64;
   const c=cv.getContext("2d");c.font="700 30px Figtree, sans-serif";c.textAlign="center";
-  c.fillStyle=txCol;c.fillText(txt,64,42);
+  const col=SW().cssv("--tx");
+  c.fillStyle=col;c.fillText(txt,64,42);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true}));
-  sp.scale.set(1.7,0.85,1);sp.userData={cv,txt};return sp;
+  sp.scale.set(1.7,0.85,1);sp.userData={cv,txt,drawn:col};return sp;
 }
 function buildVessels(pid){
   curPlant=pid;

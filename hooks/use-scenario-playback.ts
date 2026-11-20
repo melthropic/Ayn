@@ -25,8 +25,9 @@ export function useScenarioPlayback() {
     let frame = 0
     let last = performance.now()
     const tick = (now: number) => {
-      // Clamp, so a stalled frame (tab in the background) cannot leap ahead.
-      const dt = Math.min(0.1, (now - last) / 1000)
+      // Clamp, so returning to a background tab does not leap ahead, while a
+      // slow device still plays at close to real speed.
+      const dt = Math.min(0.25, (now - last) / 1000)
       last = now
       const next = hourRef.current + (dt * HORIZON_HOURS) / PLAYBACK_SECONDS
       setHour(next)
