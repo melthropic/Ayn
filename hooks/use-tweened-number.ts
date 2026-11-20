@@ -1,25 +1,17 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useReducedMotion } from './use-media-query'
 
 /**
  * Eases a displayed number toward `target`. A new target mid-tween starts
  * from wherever the number currently is, so fast changes (scenario playback)
- * stay smooth. Starts from `from` on mount; reduced motion jumps straight to
- * the target.
+ * stay smooth. Starts from `from` on mount.
  */
 export function useTweenedNumber(target: number, { from = target, duration = 600 } = {}) {
-  const reducedMotion = useReducedMotion()
   const [value, setValue] = useState(from)
   const current = useRef(from)
 
   useEffect(() => {
-    if (reducedMotion) {
-      current.current = target
-      setValue(target)
-      return
-    }
     const start = current.current
     if (start === target) return
     const t0 = performance.now()
@@ -34,7 +26,7 @@ export function useTweenedNumber(target: number, { from = target, duration = 600
     }
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
-  }, [target, duration, reducedMotion])
+  }, [target, duration])
 
   return value
 }

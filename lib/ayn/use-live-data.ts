@@ -33,6 +33,8 @@ const INITIAL: LiveState = {
 
 /** Writes closer together than this are coalesced. */
 const WRITE_INTERVAL_MS = 250
+/** A row matching our own write inside this window is our echo, not a remote move. */
+const ECHO_WINDOW_MS = 3000
 
 const num = (v: unknown): number | null => {
   if (v === null || v === undefined) return null
@@ -74,9 +76,14 @@ export function useLiveData(): LiveControls {
   const latest = useRef<number | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastWrite = useRef(0)
+  // Hours this device sent recently (hour -> time sent), so their echoes do
+  // not drag the local clock back while it is playing ahead.
+  const ownWrites = useRef(new Map<number, number>())
 
-  const writeHour = useCallback((hour: number) => {
+  const writeHour = useCallback((value: number) => {
     if (!liveConfigured()) return
+    // `scenario.hour` is an integer column; playback produces fractions.
+    const hour = Math.round(value)
     if (hour === remoteHour.current) return
     remoteHour.current = hour
     latest.current = hour
@@ -85,8 +92,10 @@ export function useLiveData(): LiveControls {
     timer.current = setTimeout(() => {
       timer.current = null
       lastWrite.current = Date.now()
-      const value = latest.current
-      if (value !== null) void writeScenarioHour(value)
+      const next = latest.current
+      if (next === null) return
+      ownWrites.current.set(next, Date.now())
+      void writeScenarioHour(next)
     }, delay)
   }, [])
 
@@ -102,6 +111,12 @@ export function useLiveData(): LiveControls {
         const row = payload.new as { hour?: number; updated_at?: string }
         if (typeof row?.hour !== 'number') return
         remoteHour.current = row.hour
+        const sentAt = ownWrites.current.get(row.hour)
+        ownWrites.current.delete(row.hour)
+        if (sentAt !== undefined && Date.now() - sentAt < ECHO_WINDOW_MS) {
+          setState((s) => ({ ...s, updatedAt: row.updated_at ?? s.updatedAt, connected: true }))
+          return
+        }
         setState((s) => ({
           ...s,
           hour: row.hour as number,

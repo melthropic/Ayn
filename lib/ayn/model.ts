@@ -113,18 +113,36 @@ export function riskStatus(risk: number): Status {
 
 const plantById = (id: PlantId) => PLANTS.find((p) => p.id === id)!
 
+// Simulated pressure drop at each whole hour, per train. The curve is fixed
+// (it depends only on the spec and the bloom track), so it is built once;
+// playback asks for every train at a new fractional hour on every frame.
+const dpCurveCache = new Map<string, number[]>()
+
+function dpCurve(spec: TrainSpec) {
+  let curve = dpCurveCache.get(spec.id)
+  if (curve) return curve
+  const plant = plantById(spec.plant)
+  curve = [spec.dp0]
+  for (let h = 0; h < HORIZON_HOURS; h++) {
+    curve.push(curve[h] + spec.baseRate + spec.bloomSensitivity * plantRisk(plant, h))
+  }
+  dpCurveCache.set(spec.id, curve)
+  return curve
+}
+
 function pressureDropAt(spec: TrainSpec, hour: number) {
   // A live reading for this hour (from Supabase) replaces the simulated curve.
   const live = liveReadingFor(spec.id, hour)
   if (live) return live.pressureDrop
+  if (hour <= 0) return spec.dp0
+  // Whole hours from the cached curve, then the partial hour at the rate of
+  // the hour it falls in (the same 1 h Euler steps as before).
+  const curve = dpCurve(spec)
+  const whole = Math.min(Math.floor(hour), HORIZON_HOURS)
+  const partial = hour - whole
+  if (partial <= 0) return curve[whole]
   const plant = plantById(spec.plant)
-  let dp = spec.dp0
-  const step = 1
-  for (let h = 0; h < hour; h += step) {
-    const dt = Math.min(step, hour - h)
-    dp += (spec.baseRate + spec.bloomSensitivity * plantRisk(plant, h)) * dt
-  }
-  return dp
+  return curve[whole] + (spec.baseRate + spec.bloomSensitivity * plantRisk(plant, whole)) * partial
 }
 
 function healthFromDp(dp: number) {

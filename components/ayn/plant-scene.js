@@ -23,8 +23,6 @@ export function mountPlantScene({ container, data, onOpenTrain }) {
   const box = container
   const bridge = createSceneBridge(data, onOpenTrain)
   const SW = () => bridge
-  const REDUCED =
-    typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 
   if (!container) throw new Error('The 3D view needs a container element')
 
@@ -283,8 +281,11 @@ function glowSet(mesh,k,rgb,size){
   sp.visible=true;
   const base=0.16+0.5*cl((k-WATCH)/(1-WATCH),0,1);
   sp.material.color.setRGB(rgb[0],rgb[1],rgb[2]);
-  sp.material.opacity=REDUCED?base*0.8:base;
-  sp.userData.k=k;sp.userData.base=base;sp.userData.phase=Math.random()*6.28;
+  sp.material.opacity=base;
+  sp.userData.k=k;sp.userData.base=base;
+  /* keep the pulse phase across recolours, or playback (a recolour every
+     frame) makes critical glows flicker */
+  if(sp.userData.phase===undefined)sp.userData.phase=Math.random()*6.28;
   GLOWS.push(sp);
 }
 
@@ -987,7 +988,7 @@ buildBloomParticles();
 function label(txt){
   const cv=document.createElement("canvas");cv.width=128;cv.height=64;
   const c=cv.getContext("2d");c.font="700 30px Figtree, sans-serif";c.textAlign="center";
-  c.fillStyle=SW().cssv("--tx");c.fillText(txt,64,42);
+  c.fillStyle=txCol;c.fillText(txt,64,42);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),transparent:true}));
   sp.scale.set(1.7,0.85,1);sp.userData={cv,txt};return sp;
 }
@@ -1131,6 +1132,7 @@ function updateColors(){
     bloomPts.geometry.setDrawRange(0,Math.round(bloomPts.userData.n*cl(chl/2.5,0.06,1)));
   }
   /* flow speed follows the plant's permeate flux */
+  const txCol=SW().cssv("--tx");
   const trains=SW().trains.filter(r2=>r2.p===curPlant);
   let fAvg=0;if(trains.length)fAvg=trains.reduce((a,r2)=>a+SW().stateAt(r2,t).flux,0)/trains.length;
   flowScale=0.45+0.55*cl(fAvg/450,0,1);
@@ -1152,11 +1154,14 @@ function updateColors(){
         o.material.color.copy(o.userData.base).lerp(rc,0.55);
         glowSet(o,worst,rcA,0.55);
       }
-      if(o.isSprite&&o.userData&&o.userData.txt){
+      /* redraw a vessel label only when its colour changes: a canvas redraw
+         and texture upload per label per frame is what made playback stutter */
+      if(o.isSprite&&o.userData&&o.userData.txt&&o.userData.drawn!==txCol){
+        o.userData.drawn=txCol;
         const c=o.userData.cv.getContext("2d");
         c.clearRect(0,0,128,64);
         c.font="700 30px Figtree, sans-serif";c.textAlign="center";
-        c.fillStyle=SW().cssv("--tx");c.fillText(o.userData.txt,64,42);
+        c.fillStyle=txCol;c.fillText(o.userData.txt,64,42);
         o.material.map.needsUpdate=true;
       }
     });
@@ -1240,7 +1245,6 @@ function buildLabelAnchors(){
 /* ============ camera fly and presets ============ */
 function wrapA(d){while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d}
 function flyTo(azT,polT,radT,cT){
-  if(REDUCED){az=azT;pol=polT;rad=radT;center.set(cT[0],cT[1],cT[2]);place();flyAnim=null;return}
   flyAnim={a0:az,a1:az+wrapA(azT-az),p0:pol,p1:polT,r0:rad,r1:radT,
     c0:center.clone(),c1:new THREE.Vector3(cT[0],cT[1],cT[2]),t0:performance.now(),dur:900};
 }
@@ -1326,7 +1330,7 @@ function overviewPreset(){
    and by the Overview button. */
 function fitOverview(animate){
   const p=overviewPreset();
-  if(animate&&!REDUCED){flyTo(p.az,p.pol,p.rad,p.c);return}
+  if(animate){flyTo(p.az,p.pol,p.rad,p.c);return}
   az=p.az;pol=p.pol;rad=p.rad;center.set(p.c[0],p.c[1],p.c[2]);place();
 }
 const PRESETS={
@@ -1501,13 +1505,13 @@ updateColors();applyCutaway();
 resize();
 
 /* ambient motion: water ripple, band screen, skimmer travel, pipe flow dashes,
-   fault-glow pulse, chlorophyll drift; all frozen under prefers-reduced-motion */
+   fault-glow pulse, chlorophyll drift */
 let tPrev=0,skPh=0;
 (function loop(t){
   if(!mounted)return;
   rafId=requestAnimationFrame(loop);
   try{
-  const dt=REDUCED?0:Math.min(0.05,((t||0)-tPrev)/1000||0.016);tPrev=t||0;
+  const dt=Math.min(0.05,((t||0)-tPrev)/1000||0.016);tPrev=t||0;
   if(dt>0){
     if(waterNT){waterNT.offset.x+=dt*0.014;waterNT.offset.y+=dt*0.010;}
     if(beltT)beltT.offset.y+=dt*0.10;

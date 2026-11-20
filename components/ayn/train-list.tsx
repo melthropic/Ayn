@@ -10,7 +10,6 @@ import { StatusDot, statusBg } from './status-dot'
 interface Props {
   trains: TrainState[]
   loading: boolean
-  reducedMotion: boolean
   onSelect: (id: string) => void
 }
 
@@ -27,9 +26,9 @@ export function HealthBar({ value, status }: { value: number; status: TrainState
   )
 }
 
-export function TrainList({ trains, loading, reducedMotion, onSelect }: Props) {
+export function TrainList({ trains, loading, onSelect }: Props) {
   const order = trains.map((t) => t.id).join(',')
-  const listRef = useFlipList<HTMLOListElement>(order, reducedMotion)
+  const listRef = useFlipList<HTMLOListElement>(order)
 
   return (
     <section aria-labelledby="trains-heading" className="rounded-xl border border-border bg-card">

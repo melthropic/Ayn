@@ -425,30 +425,3 @@ a:hover .ayn-nudge,
 button:hover .ayn-nudge {
   transform: translateX(3px);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .ayn-pulse,
-  .ayn-bloom-breathe,
-  .ayn-rise,
-  .ayn-fade,
-  .ayn-pop,
-  .ayn-swap,
-  .ayn-alert-new,
-  .ayn-draw,
-  .ayn-iris-in,
-  .ayn-blink,
-  .ayn-flow,
-  .ayn-current,
-  .ayn-drift {
-    animation: none;
-  }
-  .ayn-reveal {
-    opacity: 1;
-    transform: none;
-  }
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-  }
-}

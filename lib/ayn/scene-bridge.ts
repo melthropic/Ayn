@@ -97,11 +97,27 @@ const TOKENS: Record<string, string> = {
   '--bg': '#08222a',
 }
 
+// Theme colours only change when the theme class on <html> changes, so they
+// are cached per class. During playback the scene recolours every frame, and
+// a getComputedStyle per lookup added up.
+let cssvTheme: string | null = null
+const cssvCache = new Map<string, string>()
+
 export function cssv(token: string): string {
   const mapped = TOKENS[token] ?? token
   if (!mapped.startsWith('--')) return mapped
   if (typeof window === 'undefined') return ''
-  return getComputedStyle(document.documentElement).getPropertyValue(mapped).trim()
+  const theme = document.documentElement.className
+  if (theme !== cssvTheme) {
+    cssvTheme = theme
+    cssvCache.clear()
+  }
+  let value = cssvCache.get(mapped)
+  if (value === undefined) {
+    value = getComputedStyle(document.documentElement).getPropertyValue(mapped).trim()
+    cssvCache.set(mapped, value)
+  }
+  return value
 }
 
 function hexToRgb(hex: string): Rgb {

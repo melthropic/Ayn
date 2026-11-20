@@ -10,10 +10,10 @@ export function LoginForm({ next }: { next: string }) {
   const [busy, setBusy] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // A short side-to-side shake on a wrong password, skipped for reduced motion.
+  // A short side-to-side shake on a wrong password.
   function shake() {
     const form = formRef.current
-    if (!form || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!form) return
     form.animate(
       [
         { transform: 'translateX(0)' },

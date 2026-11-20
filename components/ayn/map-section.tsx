@@ -100,6 +100,10 @@ export function MapSection({
             max={HORIZON_HOURS}
             step={1}
             disabled={loading}
+            // Centre alignment positions the thumb with CSS alone. The default
+            // "edge" measures the DOM on every value change, which forced a
+            // layout on each playback frame.
+            thumbAlignment="center"
             onValueChange={(v) => onHourChange(Array.isArray(v) ? v[0] : v)}
             getAriaLabel={() => 'Forecast time, hours from now'}
             getAriaValueText={(_, v) => (v === 0 ? 'Now' : `${v} hours from now`)}

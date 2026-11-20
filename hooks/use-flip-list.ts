@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef } from 'react'
 
 // FLIP animation: when the order of keyed children changes, slide each row
 // from its previous position to its new one.
-export function useFlipList<T extends HTMLElement>(orderKey: string, disabled: boolean) {
+export function useFlipList<T extends HTMLElement>(orderKey: string) {
   const containerRef = useRef<T>(null)
   const positions = useRef(new Map<string, number>())
 
@@ -19,7 +19,7 @@ export function useFlipList<T extends HTMLElement>(orderKey: string, disabled: b
       const top = row.getBoundingClientRect().top
       next.set(key, top)
       const prev = positions.current.get(key)
-      if (disabled || prev === undefined) continue
+      if (prev === undefined) continue
       const delta = prev - top
       if (Math.abs(delta) < 1) continue
       row.animate([{ transform: `translateY(${delta}px)` }, { transform: 'translateY(0)' }], {
@@ -28,7 +28,7 @@ export function useFlipList<T extends HTMLElement>(orderKey: string, disabled: b
       })
     }
     positions.current = next
-  }, [orderKey, disabled])
+  }, [orderKey])
 
   return containerRef
 }
